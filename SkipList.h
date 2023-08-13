@@ -25,12 +25,12 @@ private:
         int level;                // 节点的层级
         const K key;              // 键的值
         V value;                  // 值
-        skip_list_node** forward; // 指向下一层节点的指针数组
+        skip_list_node** forward; //forward 是指针数组，用于指向下一层 例如 forward[0] 是指向第一层，forward[1] 指向上一层
 
-        // 节点构造函数
+        // 默认节点构造函数
         skip_list_node() :key{ 0 }, value{ 0 }, level{ 0 }, forward{0} {}
 
-        // 节点构造函数
+        // 带参节点构造函数
         skip_list_node(K k, V v, int l, skip_list_node* nxt = nullptr) :key(k), value(v), level(l) {
             forward = new skip_list_node * [level + 1];  // 创建指向下一层节点的指针数组
             for (int i = 0; i <= level; ++i) forward[i] = nxt;  // 初始化指针数组
@@ -41,6 +41,7 @@ private:
     };
 
     using node = skip_list_node;
+    // 初始化头节点
     void init() {
         srand((uint32_t)time(NULL));  // 初始化随机数种子
         level = length = 0;
@@ -59,7 +60,7 @@ private:
     static const int MAXL = 32;  // 最大层级
     static const int P = 4;      // 概率因子
     static const int S = 0xFFFF; // 随机数的范围
-    static const int PS = S / P; // 随机数的概率
+    static const int PS = S / P; // 随机数的概率，增加一层的概率默认为 0.25
     static const int INVALID = INT_MAX; // 无效值
 
     node* head, * tail;   // 头节点和尾节点
@@ -68,7 +69,9 @@ private:
     // 查找节点
     node* find(const K& key, node** update) {
         node* p = head;
+        // 从最高层开始找
         for (int i = level; i >= 0; i--) {
+            // 如果满足：没有到尾结点并且当前键值小于目标键值，则继续寻找
             while (p->forward[i] != tail && less(p->forward[i]->key, key)) {
                 p = p->forward[i];
             }
