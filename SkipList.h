@@ -25,15 +25,18 @@ private:
         int level;                // 节点的层级
         const K key;              // 键的值
         V value;                  // 值
-        skip_list_node** forward; //forward 是指针数组，用于指向下一层 例如 forward[0] 是指向第一层，forward[1] 指向上一层
+        //forward 是指针数组，指向下一个节点的不同层
+        skip_list_node** forward;
 
         // 默认节点构造函数
-        skip_list_node() :key{ 0 }, value{ 0 }, level{ 0 }, forward{0} {}
+        skip_list_node() : key{ 0 }, value{ 0 }, level{ 0 }, forward{nullptr} {}
 
         // 带参节点构造函数
         skip_list_node(K k, V v, int l, skip_list_node* nxt = nullptr) :key(k), value(v), level(l) {
             forward = new skip_list_node * [level + 1];  // 创建指向下一层节点的指针数组
-            for (int i = 0; i <= level; ++i) forward[i] = nxt;  // 初始化指针数组
+            for (int i = 0; i <= level; ++i) {
+                forward[i] = nxt;  // 初始化指针数组
+            }
         }
 
         // 节点析构函数
@@ -46,8 +49,9 @@ private:
         srand((uint32_t)time(NULL));  // 初始化随机数种子
         level = length = 0;
         head->forward = new node * [MAXL + 1];  // 创建头节点指向下一层节点的指针数组
-        for (int i = 0; i <= MAXL; i++)
+        for (int i = 0; i <= MAXL; i++) {
             head->forward[i] = tail;  // 初始化头节点指向尾节点
+        }
     }
 
     int randomLevel() {
@@ -63,10 +67,11 @@ private:
     static const int PS = S / P; // 随机数的概率，增加一层的概率默认为 0.25
     static const int INVALID = INT_MAX; // 无效值
 
-    node* head, * tail;   // 头节点和尾节点
+    node *head, *tail;   // 头节点和尾节点
     Comp less;           // 比较函数对象
 
-    // 查找节点
+    // 根据键值查找节点。具体找到的是第一个键值不小于 key 的节点。
+    // 在插入元素时，由于我们是在返回元素的前面添加，所以需要用 update 来记录每一层的前驱结点
     node* find(const K& key, node** update) {
         node* p = head;
         // 从最高层开始找
@@ -90,15 +95,15 @@ public:
 
         Iter(node* rhs) : p(rhs) {}  // 带参构造函数
 
-        node* operator ->()const { return (p);}  // 重载箭头运算符，返回指针本身
+        node* operator ->()const { return (p); }  // 重载箭头运算符，返回指针本身
 
-        node& operator *() const { return *p;}  // 重载解引用运算符，返回指针所指的节点
+        node& operator *() const { return *p; }  // 重载解引用运算符，返回指针所指的节点
 
-        bool operator == (const Iter& rhs) { return rhs.p == p;}  // 重载相等运算符
+        bool operator == (const Iter& rhs) { return rhs.p == p; }  // 重载相等运算符
 
-        bool operator != (const Iter& rhs) {return !(rhs.p == p);}  // 重载不等运算符
+        bool operator != (const Iter& rhs) {return !(rhs.p == p); }  // 重载不等运算符
 
-        void operator ++() {p = p->forward[0];}  // 重载前置自增运算符
+        void operator ++() {p = p->forward[0]; }  // 重载前置自增运算符
 
         void operator ++(int) { p = p->forward[0]; }  // 重载后置自增运算符
     };
